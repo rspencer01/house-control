@@ -1,10 +1,46 @@
 {% extends "layout.html" %}
 
 {% block heading %}
-Data blob
+Overview
 {% endblock %}
 
 {% block content %}
-<h5>Last updated data:</h5>
-{{ data }}
+<div class="card-deck">
+  <div class="card">
+    <div class="card-body">
+      <h6>Last updated data:</h6>
+      <p class="card-text">
+        {{ data }}
+      </p>
+      <p class="card-text"><small class="text-muted">Latest raw dump of received data.</small></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h6 class="card-title">Lights</h5>
+      <table class="table">
+        <tbody>
+          {% for light in lights %}
+            <tr>
+              <td>
+                {{ light.name }}
+              </td>
+              <td>Off</td>
+            </tr>
+          {% endfor %}
+          {% for light in lights %}
+            <tr>
+              <td>
+                {{ light.name }}
+              </td>
+              <td>On</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="card-text"><small class="text-muted">Tap on a row to edit the light.</small></p>
+    </div>
+  </div>
+</div>
 {% endblock %}
