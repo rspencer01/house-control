@@ -5,7 +5,11 @@ import json
 import yaml
 from flask_sqlalchemy import SQLAlchemy
 
+from logging.config import dictConfig
+
 configuration = yaml.load(open('config.yaml', 'r'))
+
+dictConfig(configuration['logging'])
 
 application = Flask(__name__)
 application.debug = True
