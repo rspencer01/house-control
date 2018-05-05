@@ -1,11 +1,13 @@
 from flask import Flask, redirect, url_for, session, request, render_template, send_from_directory
 from flask_oauth import OAuth
+from flask_sqlalchemy import SQLAlchemy
 from urllib2 import Request, urlopen, URLError
 import json
 import yaml
-from flask_sqlalchemy import SQLAlchemy
 
 from logging.config import dictConfig
+
+import Light
 
 configuration = yaml.load(open('config.yaml', 'r'))
 
@@ -16,12 +18,6 @@ application.debug = True
 application.secret_key = "laekdfjlkajsfpwiejr1oj3204-1044"
 application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////srv/house-server/main.db'
 db = SQLAlchemy(application)
-
-class Light(db.Model):
-  id = db.Column(db.String(80), primary_key=True)
-  name = db.Column(db.String(120)) 
-  def __repr__(self):
-    return "<Light %r>" % self.name
 
 oauth = OAuth()
 google = oauth.remote_app('google',
@@ -40,7 +36,7 @@ google = oauth.remote_app('google',
 def index():
   if 'access_token' not in session:
     return render_template('login.html')
-  return render_template('index.html', data=open("/tmp/data").read(), lights=Light.query.all())
+  return render_template('index.html', data=open("/tmp/data").read(), lights=Light.Light.query.all())
 
 
 @application.route("/login")
