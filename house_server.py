@@ -3,6 +3,7 @@ from flask_oauth import OAuth
 from urllib2 import Request, urlopen, URLError
 import json
 import yaml
+from flask_sqlalchemy import SQLAlchemy
 
 configuration = yaml.load(open('config.yaml', 'r'))
 
@@ -25,24 +26,9 @@ google = oauth.remote_app('google',
 
 @application.route("/")
 def index():
-  access_token = session.get('access_token')
-  if access_token is None:
+  if 'access_token' not in session:
     return render_template('login.html')
-  access_token = access_token[0]
-  headers = {"Authorization": "OAuth "+access_token}
-  req = Request("https://www.googleapis.com/oauth2/v1/userinfo",
-      None, headers)
-  try:
-    res = urlopen(req)
-  except URLError, e:
-    if e.code == 401:
-      session.pop('access_token', None)
-      return render_template('login.html')
-    return str(e)
-  login_details = json.loads(res.read())
-  if login_details['email'] not in configuration['authorized_emails']:
-    return "<html><body>Sorry, you are not authorized.</body></html>"
-  return render_template('index.html', data=open("/tmp/data").read()+"DDD")
+  return render_template('index.html', data=open("/tmp/data").read())
 
 
 @application.route("/login")
@@ -55,6 +41,24 @@ def login():
 def authorized(resp):
   access_token = resp['access_token']
   session['access_token'] = access_token, ''
+  if access_token is None:
+    return render_template('login.html')
+  headers = {"Authorization": "OAuth "+access_token}
+  req = Request("https://www.googleapis.com/oauth2/v1/userinfo", None, headers)
+  try:
+    res = urlopen(req)
+  except URLError, e:
+    if e.code == 401:
+      session.pop('access_token', None)
+      return render_template('login.html')
+    return str(e)
+  login_details = json.loads(res.read())
+
+  if login_details['email'] not in configuration['authorized_emails']:
+    application.logger.warn("Unauthorised attempted access of / by %s", login_details['email'])
+    session.pop('access_token', None)
+    return "<html><body>Sorry, you are not authorized.</body></html>"
+  application.logger.info("Login by %s", login_details['email'])
   return redirect(url_for('index'))
 
 @google.tokengetter
