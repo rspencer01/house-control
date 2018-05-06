@@ -1,13 +1,13 @@
-from flask import Flask, redirect, url_for, session, request, render_template, send_from_directory
+from flask import Flask, redirect, url_for, session, request, render_template, send_from_directory, redirect, flash
 from flask_oauth import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from urllib2 import Request, urlopen, URLError
 import json
 import yaml
+import os
+from datetime import datetime
 
 from logging.config import dictConfig
-
-import Light
 
 configuration = yaml.load(open('config.yaml', 'r'))
 
@@ -32,12 +32,34 @@ google = oauth.remote_app('google',
     consumer_key=configuration['google_client_id'],
     consumer_secret=configuration['google_client_secret'])
 
+@application.template_filter('strftime')
+def _jinja2_filter_datetime(date, fmt=None):
+  native = datetime.fromtimestamp(date)
+  format='%X %d/%m/%Y'
+  return native.strftime(format)
+
 @application.route("/")
 def index():
   if 'access_token' not in session:
     return render_template('login.html')
-  return render_template('index.html', data=open("/tmp/data").read(), lights=Light.Light.query.all())
+  from Light import Light
+  return render_template('index.html', data=open("/tmp/data").read(), lights=Light.query.all(), last_modified=os.path.getmtime('/tmp/data'))
 
+@application.route("/edit/light/<light_id>", methods=["GET", "POST"])
+def edit_light(light_id):
+  if 'access_token' not in session:
+    return render_template('login.html')
+  from Light import Light
+  light=Light.query.filter_by(id=light_id).first()
+  if light is None:
+    return redirect(url_for('index'))
+  if request.method == "GET":
+    return render_template('edit_light.html', light=light)
+  if request.method == "POST":
+    light.name = request.form['name']
+    db.session.commit()
+    flash("Updated light \"%s\"" % light.name, "success")
+    return redirect(url_for('index'))
 
 @application.route("/login")
 def login():

@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+Edit Light
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h5>Light</h5>
+    <p class="card-text">
+      <form method="POST">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" class="form-control" id="name" name="name" value="{{ light.name }}"/>
+          <small class="form-text text-muted">
+            A human readable name for this light, e.g. "Lounge" or "Office".
+          </small>
+        </div>
+        <fieldset disabled>
+          <div class="form-group">
+            <label for="internal_id">ID</label>
+            <input type="text" class="form-control" id="internal_id" value="{{ light.id }}"/>
+            <small class="form-text text-muted">
+              The internal ID of this light.
+            </small>
+          </div>
+        </fieldset>
+        <button type="submit" class="btn btn-primary float-right">Update</button>
+      </form>
+    </p>
+  </div>
+</div>
+{% endblock %}
