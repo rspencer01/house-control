@@ -42,14 +42,14 @@ def _jinja2_filter_datetime(date, fmt=None):
 def index():
   if 'access_token' not in session:
     return render_template('login.html')
-  from Light import Light
+  from Model import Light
   return render_template('index.html', data=open("/tmp/data").read(), lights=Light.query.all(), last_modified=os.path.getmtime('/tmp/data'))
 
 @application.route("/edit/light/<light_id>", methods=["GET", "POST"])
 def edit_light(light_id):
   if 'access_token' not in session:
     return render_template('login.html')
-  from Light import Light
+  from Model import Light
   light=Light.query.filter_by(id=light_id).first()
   if light is None:
     return redirect(url_for('index'))
