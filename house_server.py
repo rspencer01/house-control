@@ -97,7 +97,7 @@ def get_access_token():
 
 @application.route('/state', methods=["POST"])
 def state():
-  open('/tmp/data','w').write(str(request.get_json(force=True)))
+  open('/tmp/data','w').write(str(request.get_json()))
   return "Good job!"
 
 if __name__ == "__main__":
