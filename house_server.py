@@ -52,7 +52,7 @@ def index():
     from Model import Light
     return render_template(
         "index.html",
-        data=open("/tmp/data").read() + "TEST",
+        data=open("/tmp/data").read(),
         lights=Light.query.all(),
         last_modified=os.path.getmtime("/tmp/data"),
     )
