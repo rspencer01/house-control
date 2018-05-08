@@ -1,4 +1,14 @@
-from flask import Flask, redirect, url_for, session, request, render_template, send_from_directory, redirect, flash
+from flask import (
+    Flask,
+    redirect,
+    url_for,
+    session,
+    request,
+    render_template,
+    send_from_directory,
+    redirect,
+    flash,
+)
 from flask_oauth import OAuth
 from flask_sqlalchemy import SQLAlchemy
 from urllib2 import Request, urlopen, URLError
