@@ -8,19 +8,6 @@ Overview
 <div class="card-deck">
   <div class="card">
     <div class="card-body">
-      <h5>Lastest Data</h5>
-      <p class="card-text">
-        {{ data }}
-      </p>
-      <p class="card-text">
-        Last updated {{ last_modified | strftime }}
-      </p>
-      <p class="card-text"><small class="text-muted">Latest raw dump of received data.</small></p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-body">
       <h5 class="card-title">Lights</h5>
       <table class="table">
         <tbody>
@@ -29,12 +16,27 @@ Overview
               <td>
                 {{ light.name }}
               </td>
-              <td>{{ "On" if light.latest_state().state else "Off" }}</td>
+              <td>
+                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
       <p class="card-text"><small class="text-muted">Tap on a row to edit the light.</small></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5>Lastest Data</h5>
+      <p class="card-text">
+        {{ data }}
+      </p>
+      <p class="card-text">
+        Last updated {{ last_modified | strftime }}
+      </p>
+      <p class="card-text"><small class="text-muted">Latest raw dump of received data.</small></p>
     </div>
   </div>
 </div>
