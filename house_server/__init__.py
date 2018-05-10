@@ -10,7 +10,6 @@ from flask import (
     flash,
 )
 from flask_oauth import OAuth
-from flask_sqlalchemy import SQLAlchemy
 from urllib2 import Request, urlopen, URLError
 import json
 import yaml
@@ -18,13 +17,13 @@ import os
 from datetime import datetime
 
 from logging.config import dictConfig
-
-db = None
+from Model import *
 
 
 def create_application(test_config=None):
-    global db
     configuration = yaml.load(open("config.yaml", "r"))
+    if test_config is not None:
+        configuration.update(test_config)
 
     dictConfig(configuration["logging"])
 
@@ -32,11 +31,9 @@ def create_application(test_config=None):
     application.debug = True
     application.secret_key = "laekdfjlkajsfpwiejr1oj3204-1044"
     application.config["SQLALCHEMY_DATABASE_URI"] = configuration["database"]
+    application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    if test_config is not None:
-        application.config.update(test_config)
-
-    db = SQLAlchemy(application)
+    db.init_app(application)
 
     oauth = OAuth()
     google = oauth.remote_app(
@@ -66,7 +63,6 @@ def create_application(test_config=None):
         if "access_token" not in session and not configuration["test"]:
             return render_template("login.html")
 
-        from Model import Light
         return render_template(
             "index.html",
             data=open("/tmp/data").read(),
@@ -78,8 +74,6 @@ def create_application(test_config=None):
     def edit_light(light_id):
         if "access_token" not in session and not configuration["test"]:
             return render_template("login.html")
-
-        from Model import Light
 
         light = Light.query.filter_by(id=light_id).first()
         if light is None:

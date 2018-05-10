@@ -1,4 +1,7 @@
+from flask_sqlalchemy import SQLAlchemy
 from house_server import db
+
+db = SQLAlchemy()
 
 
 class Light(db.Model):
