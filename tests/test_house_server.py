@@ -2,6 +2,7 @@ import pytest
 import house_server
 import os
 import tempfile
+import time
 
 
 @pytest.fixture
@@ -68,3 +69,16 @@ def test_add_lights(client):
         sess["access_token"] = "a value"
     rv = client.get("/")
     assert rv.data.count('<tr class="clickable-row"') == 2
+
+
+def test_redundant_info(client):
+    rv = client.post("/state", json={"lights": [{"id": "new1", "state": "0"}]})
+    assert rv.status_code == 200
+    time.sleep(1)
+    rv = client.post("/state", json={"lights": [{"id": "new1", "state": "0"}]})
+    assert rv.status_code == 200
+
+    with client.session_transaction() as sess:
+        sess["access_token"] = "a value"
+    rv = client.get("/edit/light/new1")
+    assert rv.data.count("<li ") == 1

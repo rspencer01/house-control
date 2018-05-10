@@ -156,7 +156,7 @@ def create_application(test_config=None):
             if light is None:
                 light = Light(id=light_id, name=light_id)
 
-            if light.lightstates == [] or light.latest_state() != light_state:
+            if light.lightstates == [] or light.latest_state().state != light_state:
                 light.lightstates.append(
                     LightState(time=int(time.time()), state=light_state)
                 )
