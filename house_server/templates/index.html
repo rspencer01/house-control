@@ -29,7 +29,7 @@ Overview
               <td>
                 {{ light.name }}
               </td>
-              <td>-</td>
+              <td>{{ "On" if light.latest_state().state else "Off" }}</td>
             </tr>
           {% endfor %}
         </tbody>

@@ -5,30 +5,52 @@ Edit Light
 {% endblock %}
 
 {% block content %}
-<div class="card">
-  <div class="card-body">
-    <h5>Light</h5>
-    <p class="card-text">
-      <form method="POST">
-        <div class="form-group">
-          <label for="name">Name</label>
-          <input type="text" class="form-control" id="name" name="name" value="{{ light.name }}"/>
+<div class="card-deck">
+  <div class="card">
+    <div class="card-body">
+      <h5>Light</h5>
+      <p class="card-text">
+        <form method="POST">
+          <fieldset>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" class="form-control" id="name" name="name" value="{{ light.name }}"/>
+              <small class="form-text text-muted">
+                A human readable name for this light, e.g. "Lounge" or "Office".
+              </small>
+            </div>
+          </fieldset>
+          <button type="submit" class="btn btn-primary float-right">Update</button>
+        </form>
+      </p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h5>Technical Info</h5>
+      <p class="card-text">
+        <form>
+          <fieldset disabled>
+            <div class="form-group">
+              <label for="internal_id">ID</label>
+              <input type="text" class="form-control" id="internal_id" value="{{ light.id }}"/>
+              <small class="form-text text-muted">
+                The internal ID of this light.
+              </small>
+            </div>
+          </fieldset>
+          <h6>Recent Changes</h6>
+          <ul class="list-group">
+            {% for state in light.lightstates[-10:] %}
+            <li class="list-group-item"> {{ state.time }} : {{ "On" if state.state else "Off" }} </li>
+            {% endfor %}
+          </ul>
           <small class="form-text text-muted">
-            A human readable name for this light, e.g. "Lounge" or "Office".
+            The 10 most recent changes of state.
           </small>
-        </div>
-        <fieldset disabled>
-          <div class="form-group">
-            <label for="internal_id">ID</label>
-            <input type="text" class="form-control" id="internal_id" value="{{ light.id }}"/>
-            <small class="form-text text-muted">
-              The internal ID of this light.
-            </small>
-          </div>
-        </fieldset>
-        <button type="submit" class="btn btn-primary float-right">Update</button>
-      </form>
-    </p>
+        </form>
+      </p>
+    </div>
   </div>
 </div>
 {% endblock %}
