@@ -19,8 +19,11 @@ from datetime import datetime
 
 from logging.config import dictConfig
 
+db = None
+
 
 def create_application(test_config=None):
+    global db
     configuration = yaml.load(open("config.yaml", "r"))
 
     dictConfig(configuration["logging"])
@@ -28,9 +31,7 @@ def create_application(test_config=None):
     application = Flask(__name__)
     application.debug = True
     application.secret_key = "laekdfjlkajsfpwiejr1oj3204-1044"
-    application.config[
-        "SQLALCHEMY_DATABASE_URI"
-    ] = "sqlite:////srv/house-server/main.db"
+    application.config["SQLALCHEMY_DATABASE_URI"] = configuration["database"]
 
     if test_config is not None:
         application.config.update(test_config)
@@ -62,7 +63,7 @@ def create_application(test_config=None):
 
     @application.route("/")
     def index():
-        if "access_token" not in session:
+        if "access_token" not in session and not configuration["test"]:
             return render_template("login.html")
 
         from Model import Light
@@ -75,7 +76,7 @@ def create_application(test_config=None):
 
     @application.route("/edit/light/<light_id>", methods=["GET", "POST"])
     def edit_light(light_id):
-        if "access_token" not in session:
+        if "access_token" not in session and not configuration["test"]:
             return render_template("login.html")
 
         from Model import Light
