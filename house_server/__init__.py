@@ -8,11 +8,13 @@ from flask import (
     send_from_directory,
     redirect,
     flash,
+    abort,
 )
 from flask_oauth import OAuth
 from urllib2 import Request, urlopen, URLError
 import json
 import yaml
+import time
 import os
 from datetime import datetime
 
@@ -130,6 +132,32 @@ def create_application(test_config=None):
 
     @application.route("/state", methods=["POST"])
     def state():
+        data = request.get_json()
+        if type(data) is not dict:
+            abort(400)
+        if "lights" not in data:
+            abort(400)
+        data = data["lights"]
+        if type(data) != list:
+            abort(400)
+        for entry in data:
+            if "id" not in entry or "state" not in entry:
+                abort(400)
+            light_id = entry["id"]
+            light_state = entry["state"]
+            if type(light_id) is not unicode:
+                abort(400)
+            humandecode = {"0": False, "1": True, "Off": False, "On": True}
+            if light_state not in humandecode:
+                abort(400)
+            light = Light.query.get(light_id)
+            if light is None:
+                light = Light(id=light_id, name=light_id)
+            light.lightstates.append(
+                LightState(time=int(time.time()), state=humandecode[light_state])
+            )
+            db.session.add(light)
+            db.session.commit()
         open("/tmp/data", "w").write(str(request.get_json()))
         return "Good job!"
 
