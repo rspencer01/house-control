@@ -150,12 +150,17 @@ def create_application(test_config=None):
             humandecode = {"0": False, "1": True, "Off": False, "On": True}
             if light_state not in humandecode:
                 abort(400)
+            light_state = humandecode[light_state]
             light = Light.query.get(light_id)
+
             if light is None:
                 light = Light(id=light_id, name=light_id)
-            light.lightstates.append(
-                LightState(time=int(time.time()), state=humandecode[light_state])
-            )
+
+            if light.lightstates == [] or light.latest_state() != light_state:
+                light.lightstates.append(
+                    LightState(time=int(time.time()), state=light_state)
+                )
+
             db.session.add(light)
             db.session.commit()
         open("/tmp/data", "w").write(str(request.get_json()))
