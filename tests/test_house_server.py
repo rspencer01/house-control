@@ -27,12 +27,12 @@ def test_logged_out(client):
     rv = client.get("/")
     assert rv.status_code == 200
     assert b"This app requires you to authenticate with Google" in rv.data
-    assert b"Tap on a row to edit the light." not in rv.data
+    assert b"Tap on a light name to edit the light" not in rv.data
 
     rv = client.get("/edit/light/0")
     assert rv.status_code == 200
     assert b"This app requires you to authenticate with Google" in rv.data
-    assert b"Tap on a row to edit the light." not in rv.data
+    assert b"Tap on a light name to edit the light" not in rv.data
 
 
 def test_logged_in(client):
@@ -41,7 +41,7 @@ def test_logged_in(client):
     rv = client.get("/")
     assert rv.status_code == 200
     assert b"This app requires you to authenticate with Google" not in rv.data
-    assert b"Tap on a row to edit the light." in rv.data
+    assert b"Tap on a light name to edit the light" in rv.data
 
 
 def test_bad_upload(client):
