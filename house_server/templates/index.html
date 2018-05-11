@@ -17,13 +17,13 @@ Overview
                 {{ light.name }}
               </td>
               <td>
-                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
+                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }} light-toggle" data-href="{{ url_for('get_updates') }}" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}"></i>
               </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
-      <p class="card-text"><small class="text-muted">Tap on a row to edit the light.</small></p>
+      <p class="card-text"><small class="text-muted">Tap on a light name to edit the light and on the switch to toggle it.</small></p>
     </div>
   </div>
 
@@ -40,4 +40,17 @@ Overview
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  jQuery(document).ready(function($) {
+      $(".light-toggle").click(function(event) {
+        event.stopPropagation();
+        $.post("{{ url_for('get_updates') }}", { light_id: $(this).data("light_id"), state: $(this).data("changeto")}, function() {
+          location.reload(true);
+        });
+      });
+  });
+</script>
 {% endblock %}

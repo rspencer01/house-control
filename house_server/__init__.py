@@ -194,6 +194,11 @@ def create_application(test_config=None):
                 LightStateRequest(time=int(time.time()), state=new_state, seen=False)
             )
             db.session.commit()
+            flash('Toggled light "%s"' % light.name, "success")
+            flash(
+                "Currently toggling lights is not immediate.  The light will be toggled in real life within a minute, and the below table will reflect the change within a minute after that.",
+                "warning",
+            )
             return "OK"
 
     @application.route("/robots.txt")
