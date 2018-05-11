@@ -56,8 +56,10 @@ def create_application(test_config=None):
     )
 
     from . import robots
+    from . import auth
 
     application.register_blueprint(robots.bp)
+    application.register_blueprint(auth.bp)
 
     @application.template_filter("strftime")
     def _jinja2_filter_datetime(date, fmt=None):
@@ -94,46 +96,6 @@ def create_application(test_config=None):
             db.session.commit()
             flash('Updated light "%s"' % light.name, "success")
             return redirect(url_for("index"))
-
-    @application.route("/login")
-    def login():
-        callback = url_for("authorized", _external=True)
-        return google.authorize(callback=callback)
-
-    @application.route(configuration["redirect_uri"])
-    @google.authorized_handler
-    def authorized(resp):
-        access_token = resp["access_token"]
-        session["access_token"] = access_token, ""
-        if access_token is None:
-            return render_template("login.html")
-
-        headers = {"Authorization": "OAuth " + access_token}
-        req = Request("https://www.googleapis.com/oauth2/v1/userinfo", None, headers)
-        try:
-            res = urlopen(req)
-        except URLError as e:
-            if e.code == 401:
-                session.pop("access_token", None)
-                return render_template("login.html")
-
-            return str(e)
-
-        login_details = json.loads(res.read())
-
-        if login_details["email"] not in configuration["authorized_emails"]:
-            application.logger.warn(
-                "Unauthorised attempted access of / by %s", login_details["email"]
-            )
-            session.pop("access_token", None)
-            return "<html><body>Sorry, you are not authorized.</body></html>"
-
-        application.logger.info("Login by %s", login_details["email"])
-        return redirect(url_for("index"))
-
-    @google.tokengetter
-    def get_access_token():
-        return session.get("access_token")
 
     @application.route("/state", methods=["POST"])
     @application.route("/api/state", methods=["POST"])
