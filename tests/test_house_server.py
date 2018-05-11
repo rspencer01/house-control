@@ -80,14 +80,14 @@ def test_redundant_info(client):
 
 
 def test_get_updates(client):
-    # No requests made yet
+    # No requests made yet: no data to get
     rv = client.get("/updates")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
     add_light(client, "0000")
 
-    client.post("/updates", data=dict(light_id="0000", state="on"))
+    rv = client.post("/updates", data=dict(light_id="0000", state="on"))
     assert rv.status_code == 200
 
     rv = client.get("/updates")
@@ -107,3 +107,20 @@ def test_get_updates_only_once(client):
     rv = client.get("/updates")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
+
+
+def test_get_multiple_updates(client):
+    add_light(client, "0000")
+    add_light(client, "0001")
+
+    rv = client.post("/updates", data=dict(light_id="0000", state="on"))
+    assert rv.status_code == 200
+    rv = client.post("/updates", data=dict(light_id="0001", state="off"))
+    assert rv.status_code == 200
+
+    rv = client.get("/updates")
+    assert rv.status_code == 200
+    assert (
+        rv.get_json()
+        == {"lights": [{"id": "0000", "state": "on"}, {"id": "0001", "state": "off"}]}
+    )
