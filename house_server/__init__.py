@@ -55,6 +55,10 @@ def create_application(test_config=None):
         consumer_secret=configuration["google_client_secret"],
     )
 
+    from . import robots
+
+    application.register_blueprint(robots.bp)
+
     @application.template_filter("strftime")
     def _jinja2_filter_datetime(date, fmt=None):
         native = datetime.fromtimestamp(date)
@@ -200,10 +204,6 @@ def create_application(test_config=None):
                 "warning",
             )
             return "OK"
-
-    @application.route("/robots.txt")
-    def static_from_root():
-        return send_from_directory(application.static_folder, request.path[1:])
 
     return application
 
