@@ -166,6 +166,10 @@ def create_application(test_config=None):
         open("/tmp/data", "w").write(str(request.get_json()))
         return "Good job!"
 
+    @application.route("/robots.txt")
+    def static_from_root():
+        return send_from_directory(application.static_folder, request.path[1:])
+
     return application
 
 
