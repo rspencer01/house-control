@@ -4,6 +4,8 @@ import os
 import tempfile
 import time
 
+from utils import *
+
 
 @pytest.fixture
 def application():
@@ -34,8 +36,7 @@ def test_logged_out(client):
 
 
 def test_logged_in(client):
-    with client.session_transaction() as sess:
-        sess["access_token"] = "a value"
+    spoof_login(client)
 
     rv = client.get("/")
     assert rv.status_code == 200
@@ -59,27 +60,21 @@ def test_bad_upload(client):
 
 
 def test_add_lights(client):
-    rv = client.post(
-        "/state",
-        json={"lights": [{"id": "new1", "state": "0"}, {"id": "new2", "state": "1"}]},
-    )
-    assert rv.status_code == 200
+    add_light(client, "new1")
+    add_light(client, "new2")
+    spoof_login(client)
 
-    with client.session_transaction() as sess:
-        sess["access_token"] = "a value"
     rv = client.get("/")
     assert rv.data.count('<tr class="clickable-row"') == 2
 
 
 def test_redundant_info(client):
-    rv = client.post("/state", json={"lights": [{"id": "new1", "state": "0"}]})
-    assert rv.status_code == 200
+    add_light(client, "new1")
     time.sleep(1)
     rv = client.post("/state", json={"lights": [{"id": "new1", "state": "0"}]})
     assert rv.status_code == 200
 
-    with client.session_transaction() as sess:
-        sess["access_token"] = "a value"
+    spoof_login(client)
     rv = client.get("/edit/light/new1")
     assert rv.data.count("<li ") == 1
 
@@ -90,7 +85,7 @@ def test_get_updates(client):
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
-    rv = client.post("/state", json={"lights": [{"id": "0000", "state": "0"}]})
+    add_light(client, "0000")
 
     client.post("/updates", data=dict(light_id="0000", state="on"))
     assert rv.status_code == 200
@@ -101,14 +96,9 @@ def test_get_updates(client):
 
 
 def test_get_updates_only_once(client):
-    # No requests made yet
-    rv = client.get("/updates")
-    assert rv.status_code == 200
-    assert rv.get_json() == {"lights": []}
+    add_light(client, "0000")
 
-    rv = client.post("/state", json={"lights": [{"id": "0000", "state": "0"}]})
-
-    client.post("/updates", data=dict(light_id="0000", state="on"))
+    rv = client.post("/updates", data=dict(light_id="0000", state="on"))
     assert rv.status_code == 200
 
     rv = client.get("/updates")
