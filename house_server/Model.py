@@ -24,3 +24,18 @@ class LightState(db.Model):
 
     def __repr__(self):
         return "<LightState %r %r %r>" % (self.light_id, self.time, self.state)
+
+
+class LightStateRequest(db.Model):
+    time = db.Column(db.Integer, primary_key=True)
+    light_id = db.Column(db.String(80), db.ForeignKey("light.id"), primary_key=True)
+    light = db.relationship(
+        "Light", backref=db.backref("lightstaterequests", lazy=True, order_by=time)
+    )
+    state = db.Column(db.Boolean)
+    seen = db.Column(db.Boolean)
+
+    def __repr__(self):
+        return "<LightStateRequest %r %r %r %r>" % (
+            self.light_id, self.time, self.state, self.seen
+        )

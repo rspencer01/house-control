@@ -7,6 +7,7 @@ from flask import (
     render_template,
     send_from_directory,
     redirect,
+    jsonify,
     flash,
     abort,
 )
@@ -131,6 +132,7 @@ def create_application(test_config=None):
         return session.get("access_token")
 
     @application.route("/state", methods=["POST"])
+    @application.route("/api/state", methods=["POST"])
     def state():
         data = request.get_json()
         if type(data) is not dict:
@@ -165,6 +167,34 @@ def create_application(test_config=None):
             db.session.commit()
         open("/tmp/data", "w").write(str(request.get_json()))
         return "Good job!"
+
+    @application.route("/updates", methods=["POST", "GET"])
+    def get_updates():
+        if request.method == "GET":
+            lights_updates = []
+            for update in db.session().query(LightStateRequest).filter(
+                LightStateRequest.seen == False
+            ):
+                lights_updates.append(
+                    {"id": update.light_id, "state": "on" if update.state else "off"}
+                )
+                update.seen = True
+            db.session.commit()
+            return jsonify({"lights": lights_updates})
+
+        elif request.method == "POST":
+            light_id = request.form["light_id"]
+            new_state = request.form["state"]
+            humandecode = {"0": False, "1": True, "off": False, "on": True}
+            new_state = humandecode[new_state]
+            light = Light.query.get(light_id)
+            if not light:
+                abort(400)
+            light.lightstaterequests.append(
+                LightStateRequest(time=int(time.time()), state=new_state, seen=False)
+            )
+            db.session.commit()
+            return "OK"
 
     @application.route("/robots.txt")
     def static_from_root():

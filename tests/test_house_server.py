@@ -82,3 +82,38 @@ def test_redundant_info(client):
         sess["access_token"] = "a value"
     rv = client.get("/edit/light/new1")
     assert rv.data.count("<li ") == 1
+
+
+def test_get_updates(client):
+    # No requests made yet
+    rv = client.get("/updates")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": []}
+
+    rv = client.post("/state", json={"lights": [{"id": "0000", "state": "0"}]})
+
+    client.post("/updates", data=dict(light_id="0000", state="on"))
+    assert rv.status_code == 200
+
+    rv = client.get("/updates")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": [{"id": "0000", "state": "on"}]}
+
+
+def test_get_updates_only_once(client):
+    # No requests made yet
+    rv = client.get("/updates")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": []}
+
+    rv = client.post("/state", json={"lights": [{"id": "0000", "state": "0"}]})
+
+    client.post("/updates", data=dict(light_id="0000", state="on"))
+    assert rv.status_code == 200
+
+    rv = client.get("/updates")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": [{"id": "0000", "state": "on"}]}
+    rv = client.get("/updates")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": []}
