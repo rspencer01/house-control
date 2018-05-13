@@ -7,8 +7,8 @@ Overview
 {% block content %}
 <div class="card-deck">
   <div class="card">
+    <h5 class="card-header">Lights</h5>
     <div class="card-body">
-      <h5 class="card-title">Lights</h5>
       <table class="table">
         <tbody>
           {% for light in lights %}
@@ -28,8 +28,8 @@ Overview
   </div>
 
   <div class="card">
+    <h5 class="card-header">Debug Data</h5>
     <div class="card-body">
-      <h5>Lastest Data</h5>
       <p class="card-text">
         {{ data }}
       </p>
