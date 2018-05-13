@@ -11,6 +11,9 @@ Overview
       <button class="btn btn-outline-secondary btn-sm float-right" id="all-off" style="margin-left:5px;">All off</button>
       <button class="btn btn-outline-secondary btn-sm float-right" id="all-on" style="margin-right:5px;">All on</button></h5>
     <div class="card-body">
+      <p>
+        There are {{ lights | length }} lights, of which {{ lights | counton }} are on.
+      </p>
       <table class="table">
         <tbody>
           {% for light in lights %}
@@ -18,7 +21,7 @@ Overview
               <td class="clickable-link" data-href="{{ url_for('edit_light', light_id=light.id) }}">
                 {{ light.name }}
               </td>
-              <td class="light-toggle" data-href="{{ url_for('get_updates') }}" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}">
+              <td class="light-toggle" data-href="{{ url_for('get_updates') }}" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}" style="text-align:center;">
                 <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
               </td>
             </tr>

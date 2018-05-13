@@ -51,6 +51,10 @@ def create_application(test_config=None):
         format = "%X %d/%m/%Y"
         return native.strftime(format)
 
+    @application.template_filter("counton")
+    def _jinja2_filter_datetime(lights):
+        return len([light for light in lights if light.latest_state().state])
+
     @application.route("/")
     @auth.login_required
     def index():

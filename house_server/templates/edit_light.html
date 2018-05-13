@@ -28,28 +28,26 @@ Edit Light
   <div class="card">
     <h5 class="card-header">Technical Info</h5>
     <div class="card-body">
-      <p class="card-text">
-        <form>
-          <fieldset disabled>
-            <div class="form-group">
-              <label for="internal_id">ID</label>
-              <input type="text" class="form-control" id="internal_id" value="{{ light.id }}"/>
-              <small class="form-text text-muted">
-                The internal ID of this light.
-              </small>
-            </div>
-          </fieldset>
-          <h6>Recent Changes</h6>
-          <ul class="list-group">
-            {% for state in light.lightstates[-10:] %}
-            <li class="list-group-item"> {{ state.time | strftime }} : {{ "On" if state.state else "Off" }} </li>
-            {% endfor %}
-          </ul>
-          <small class="form-text text-muted">
-            The 10 most recent changes of state.
-          </small>
-        </form>
-      </p>
+      <form>
+        <fieldset disabled>
+          <div class="form-group">
+            <label for="internal_id">ID</label>
+            <input type="text" class="form-control" id="internal_id" value="{{ light.id }}"/>
+            <small class="form-text text-muted">
+              The internal ID of this light.
+            </small>
+          </div>
+        </fieldset>
+        <h6>Recent Changes</h6>
+        <ul class="list-group">
+          {% for state in light.lightstates[-10:] %}
+          <li class="list-group-item"> {{ state.time | strftime }} : {{ "On" if state.state else "Off" }} </li>
+          {% endfor %}
+        </ul>
+        <small class="form-text text-muted">
+          The 10 most recent changes of state.
+        </small>
+      </form>
     </div>
   </div>
 </div>
