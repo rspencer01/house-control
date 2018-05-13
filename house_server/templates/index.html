@@ -7,7 +7,9 @@ Overview
 {% block content %}
 <div class="card-deck">
   <div class="card">
-    <h5 class="card-header">Lights</h5>
+      <h5 class="card-header">Lights
+      <button class="btn btn-outline-secondary btn-sm float-right" id="all-off" style="margin-left:5px;">All off</button>
+      <button class="btn btn-outline-secondary btn-sm float-right" id="all-on" style="margin-right:5px;">All on</button></h5>
     <div class="card-body">
       <table class="table">
         <tbody>
@@ -48,6 +50,18 @@ Overview
       $(".light-toggle").click(function(event) {
         event.stopPropagation();
         $.post("{{ url_for('get_updates') }}", { light_id: $(this).data("light_id"), state: $(this).data("changeto")}, function() {
+          location.reload(true);
+        });
+      });
+      $("#all-on").click(function(event) {
+        event.stopPropagation();
+        $.post("{{ url_for('all_change') }}", { state: "on" }, function () {
+          location.reload(true);
+        });
+      });
+      $("#all-off").click(function(event) {
+        event.stopPropagation();
+        $.post("{{ url_for('all_change') }}", { state: "off" }, function () {
           location.reload(true);
         });
       });

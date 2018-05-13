@@ -145,3 +145,25 @@ def test_get_multiple_updates_only_once(client):
     rv = client.get("/updates")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
+
+
+def test_all_on(client):
+    add_light(client, "0000")
+    add_light(client, "0001")
+    add_light(client, "0002")
+
+    rv = client.post("/all", data={"state": "on"})
+    assert rv.status_code == 200
+
+    rv = client.get("/updates?key=test_pi_key")
+    assert rv.status_code == 200
+    assert (
+        rv.get_json()
+        == {
+            "lights": [
+                {"id": "0000", "state": "on"},
+                {"id": "0001", "state": "on"},
+                {"id": "0002", "state": "on"},
+            ]
+        }
+    )

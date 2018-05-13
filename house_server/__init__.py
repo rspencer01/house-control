@@ -115,6 +115,27 @@ def create_application(test_config=None):
         open("/tmp/data", "w").write(str(request.get_json()))
         return "Good job!"
 
+    @application.route("/all", methods=["POST"])
+    def all_change():
+        if request.form["state"] == "on":
+            new_state = True
+        elif request.form["state"] == "off":
+            new_state = False
+        else:
+            abort(400)
+        for light in Light.query.all():
+            light.lightstaterequests.append(
+                LightStateRequest(time=int(time.time()), state=new_state, seen=False)
+            )
+        db.session.commit()
+
+        flash('Switched all lights "%s"' % request.form["state"], "success")
+        flash(
+            "Currently switching lights is not immediate.  The light will be toggled in real life within a minute, and the below table will reflect the change within a minute after that.",
+            "warning",
+        )
+        return "OK"
+
     @application.route("/updates", methods=["POST", "GET"])
     def get_updates():
         if request.method == "GET":
