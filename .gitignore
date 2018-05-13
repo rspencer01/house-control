@@ -116,3 +116,4 @@ venv.bak/
 
 config.yaml
 **/*.db
+*.swp
