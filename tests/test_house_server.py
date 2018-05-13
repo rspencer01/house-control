@@ -68,7 +68,7 @@ def test_add_lights(client):
     spoof_login(client)
 
     rv = client.get("/")
-    assert rv.data.count('<tr class="clickable-row"') == 2
+    assert rv.data.count('<td class="clickable-link"') == 2
 
 
 def test_redundant_info(client):
