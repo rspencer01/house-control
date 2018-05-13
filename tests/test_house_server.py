@@ -43,6 +43,9 @@ def test_logged_in(client):
     assert b"This app requires you to authenticate with Google" not in rv.data
     assert b"Tap on a light name to edit the light" in rv.data
 
+    rv = client.get("/edit/light/0")
+    assert b"This app requires you to authenticate with Google" not in rv.data
+
 
 def test_bad_upload(client):
     rv = client.post(

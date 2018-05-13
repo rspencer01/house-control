@@ -11,7 +11,6 @@ from flask import (
     flash,
     abort,
 )
-from flask_oauth import OAuth
 from urllib2 import Request, urlopen, URLError
 import json
 import yaml
@@ -38,28 +37,13 @@ def create_application(test_config=None):
 
     db.init_app(application)
 
-    oauth = OAuth()
-    google = oauth.remote_app(
-        "google",
-        base_url="https://www.google.com/accounts",
-        authorize_url="https://accounts.google.com/o/oauth2/auth",
-        request_token_url=None,
-        request_token_params={
-            "scope": "https://www.googleapis.com/auth/userinfo.email",
-            "response_type": "code",
-        },
-        access_token_url="https://accounts.google.com/o/oauth2/token",
-        access_token_method="POST",
-        access_token_params={"grant_type": "authorization_code"},
-        consumer_key=configuration["google_client_id"],
-        consumer_secret=configuration["google_client_secret"],
-    )
-
     from . import robots
     from . import auth
 
+    auth = auth.create_blueprint(test_config)
+
     application.register_blueprint(robots.bp)
-    application.register_blueprint(auth.bp)
+    application.register_blueprint(auth)
 
     @application.template_filter("strftime")
     def _jinja2_filter_datetime(date, fmt=None):
@@ -68,10 +52,8 @@ def create_application(test_config=None):
         return native.strftime(format)
 
     @application.route("/")
+    @auth.login_required
     def index():
-        if "access_token" not in session and not configuration["test"]:
-            return render_template("login.html")
-
         return render_template(
             "index.html",
             data=open("/tmp/data").read(),
@@ -80,10 +62,8 @@ def create_application(test_config=None):
         )
 
     @application.route("/edit/light/<light_id>", methods=["GET", "POST"])
+    @auth.login_required
     def edit_light(light_id):
-        if "access_token" not in session and not configuration["test"]:
-            return render_template("login.html")
-
         light = Light.query.filter_by(id=light_id).first()
         if light is None:
             return redirect(url_for("index"))
