@@ -42,7 +42,7 @@ Edit Light
           <h6>Recent Changes</h6>
           <ul class="list-group">
             {% for state in light.lightstates[-10:] %}
-            <li class="list-group-item"> {{ state.time }} : {{ "On" if state.state else "Off" }} </li>
+            <li class="list-group-item"> {{ state.time | strftime }} : {{ "On" if state.state else "Off" }} </li>
             {% endfor %}
           </ul>
           <small class="form-text text-muted">
