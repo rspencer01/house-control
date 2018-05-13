@@ -79,6 +79,7 @@ def create_application(test_config=None):
 
     @application.route("/state", methods=["POST"])
     @application.route("/api/state", methods=["POST"])
+    @auth.pi_auth_required
     def state():
         data = request.get_json()
         if type(data) is not dict:

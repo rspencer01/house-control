@@ -1,4 +1,6 @@
-from flask import Blueprint, url_for, session, redirect, render_template, current_app
+from flask import (
+    Blueprint, url_for, session, redirect, render_template, current_app, abort, request
+)
 from urllib2 import Request, urlopen, URLError
 from flask_oauth import OAuth
 import yaml
@@ -41,7 +43,19 @@ def create_blueprint(test_config=None):
 
         return wrapped_view
 
+    def pi_auth_required(view):
+
+        @functools.wraps(view)
+        def wrapped_view(**kwargs):
+            if request.args.get("key") != configuration["pi_key"]:
+                abort(400)
+
+            return view(**kwargs)
+
+        return wrapped_view
+
     bp.login_required = login_required
+    bp.pi_auth_required = pi_auth_required
 
     @bp.route("/login")
     def login():

@@ -10,7 +10,12 @@ from utils import *
 @pytest.fixture
 def application():
     application = house_server.create_application(
-        {"TESTING": True, "test": False, "database": "sqlite://"}
+        {
+            "TESTING": True,
+            "test": False,
+            "database": "sqlite://",
+            "pi_key": "test_pi_key",
+        }
     )
     with application.app_context():
         house_server.db.create_all()
@@ -83,14 +88,14 @@ def test_redundant_info(client):
 
 def test_get_updates_when_empty(client):
     # No requests made yet: no data to get, return empty list
-    rv = client.get("/updates")
+    rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
 
 def test_get_updates_when_added_light(client):
     add_light(client, "0000")
-    rv = client.get("/updates")
+    rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
@@ -99,7 +104,7 @@ def test_get_updates(client):
     add_light(client, "0000")
     update_light_status(client, "0000", "on")
 
-    rv = client.get("/updates")
+    rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": [{"id": "0000", "state": "on"}]}
 
@@ -108,8 +113,8 @@ def test_get_updates_only_once(client):
     add_light(client, "0000")
     update_light_status(client, "0000", "on")
 
-    rv = client.get("/updates")
-    rv = client.get("/updates")
+    rv = client.get("/updates?key=test_pi_key")
+    rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
@@ -121,7 +126,7 @@ def test_get_multiple_updates(client):
     update_light_status(client, "0000", "on")
     update_light_status(client, "0001", "off")
 
-    rv = client.get("/updates")
+    rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert (
         rv.get_json()
