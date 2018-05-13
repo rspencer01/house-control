@@ -55,13 +55,13 @@ Overview
       });
       $("#all-on").click(function(event) {
         event.stopPropagation();
-        $.post("{{ url_for('all_change') }}", { state: "on" }, function () {
+        $.post("{{ url_for('allchange') }}", { state: "on" }, function () {
           location.reload(true);
         });
       });
       $("#all-off").click(function(event) {
         event.stopPropagation();
-        $.post("{{ url_for('all_change') }}", { state: "off" }, function () {
+        $.post("{{ url_for('allchange') }}", { state: "off" }, function () {
           location.reload(true);
         });
       });

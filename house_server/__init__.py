@@ -116,7 +116,7 @@ def create_application(test_config=None):
         return "Good job!"
 
     @application.route("/all", methods=["POST"])
-    def all_change():
+    def allchange():
         if request.form["state"] == "on":
             new_state = True
         elif request.form["state"] == "off":
