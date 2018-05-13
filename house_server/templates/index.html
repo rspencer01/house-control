@@ -12,12 +12,12 @@ Overview
       <table class="table">
         <tbody>
           {% for light in lights %}
-          <tr class="clickable-row" data-href="{{ url_for('edit_light', light_id=light.id) }}">
-              <td>
+            <tr>
+              <td class="clickable-link" data-href="{{ url_for('edit_light', light_id=light.id) }}">
                 {{ light.name }}
               </td>
-              <td>
-                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }} light-toggle" data-href="{{ url_for('get_updates') }}" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}"></i>
+              <td class="light-toggle" data-href="{{ url_for('get_updates') }}" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}">
+                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
               </td>
             </tr>
           {% endfor %}
