@@ -21,7 +21,7 @@ Overview
               <td class="clickable-link" data-href="{{ url_for('edit_light', light_id=light.id) }}">
                 {{ light.name }}
               </td>
-              <td class="light-toggle" data-href="{{ url_for('get_updates') }}" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}" style="text-align:center;">
+              <td class="light-toggle" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}" style="text-align:center;">
                 <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
               </td>
             </tr>
@@ -52,7 +52,7 @@ Overview
   jQuery(document).ready(function($) {
       $(".light-toggle").click(function(event) {
         event.stopPropagation();
-        $.post("{{ url_for('get_updates') }}", { light_id: $(this).data("light_id"), state: $(this).data("changeto")}, function() {
+        $.post("{{ url_for('commands') }}", { light_id: $(this).data("light_id"), state: $(this).data("changeto")}, function() {
           location.reload(true);
         });
       });

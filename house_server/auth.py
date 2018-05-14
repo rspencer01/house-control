@@ -1,11 +1,12 @@
+from urllib2 import Request, urlopen, URLError
+import functools
+import json
+
 from flask import (
     Blueprint, url_for, session, redirect, render_template, current_app, abort, request
 )
-from urllib2 import Request, urlopen, URLError
 from flask_oauth import OAuth
 import yaml
-import functools
-import json
 
 
 def create_blueprint(test_config=None):

@@ -1,6 +1,13 @@
+from urllib2 import Request, urlopen, URLError
+import json
+import time
+import os
+from logging.config import dictConfig
+from datetime import datetime
+
+import yaml
 from flask import (
     Flask,
-    redirect,
     url_for,
     session,
     request,
@@ -11,15 +18,13 @@ from flask import (
     flash,
     abort,
 )
-from urllib2 import Request, urlopen, URLError
-import json
-import yaml
-import time
-import os
-from datetime import datetime
 
-from logging.config import dictConfig
-from Model import *
+import house_server.utils
+from house_server.Model import *
+
+HUMANDECODE = {
+    "off": False, "on": True, "0": False, "1": True, "Off": False, "On": True
+}
 
 
 def create_application(test_config=None):
@@ -52,7 +57,7 @@ def create_application(test_config=None):
         return native.strftime(format)
 
     @application.template_filter("counton")
-    def _jinja2_filter_datetime(lights):
+    def _jinja2_filter_counton(lights):
         return len([light for light in lights if light.latest_state().state])
 
     @application.route("/")
@@ -70,6 +75,7 @@ def create_application(test_config=None):
     def edit_light(light_id):
         light = Light.query.filter_by(id=light_id).first()
         if light is None:
+            flash("The requested light could not be found.", "error")
             return redirect(url_for("index"))
 
         if request.method == "GET":
@@ -86,24 +92,19 @@ def create_application(test_config=None):
     @auth.pi_auth_required
     def state():
         data = request.get_json()
-        if type(data) is not dict:
-            abort(400)
-        if "lights" not in data:
+        if not house_server.utils.check_json_object_format(
+            {"lights": [{"id": None, "state": None}]}, data
+        ):
             abort(400)
         data = data["lights"]
-        if type(data) != list:
-            abort(400)
         for entry in data:
-            if "id" not in entry or "state" not in entry:
-                abort(400)
             light_id = entry["id"]
             light_state = entry["state"]
             if type(light_id) is not unicode:
                 abort(400)
-            humandecode = {"0": False, "1": True, "Off": False, "On": True}
-            if light_state not in humandecode:
+            if light_state not in HUMANDECODE:
                 abort(400)
-            light_state = humandecode[light_state]
+            light_state = HUMANDECODE[light_state]
             light = Light.query.get(light_id)
 
             if light is None:
@@ -121,12 +122,10 @@ def create_application(test_config=None):
 
     @application.route("/all", methods=["POST"])
     def allchange():
-        if request.form["state"] == "on":
-            new_state = True
-        elif request.form["state"] == "off":
-            new_state = False
-        else:
+        if request.form["state"] not in HUMANDECODE:
             abort(400)
+        new_state = HUMANDECODE[request.form["state"]]
+
         for light in Light.query.all():
             light.lightstaterequests.append(
                 LightStateRequest(time=int(time.time()), state=new_state, seen=False)
@@ -141,7 +140,7 @@ def create_application(test_config=None):
         return "OK"
 
     @application.route("/updates", methods=["POST", "GET"])
-    def get_updates():
+    def commands():
         if request.method == "GET":
             lights_updates = []
             for update in db.session().query(LightStateRequest).filter(
@@ -157,8 +156,7 @@ def create_application(test_config=None):
         elif request.method == "POST":
             light_id = request.form["light_id"]
             new_state = request.form["state"]
-            humandecode = {"0": False, "1": True, "off": False, "on": True}
-            new_state = humandecode[new_state]
+            new_state = HUMANDECODE[new_state]
             light = Light.query.get(light_id)
             if not light:
                 abort(400)

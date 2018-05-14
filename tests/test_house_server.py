@@ -86,21 +86,21 @@ def test_redundant_info(client):
     assert rv.data.count("<li ") == 1
 
 
-def test_get_updates_when_empty(client):
+def test_get_commands_when_empty(client):
     # No requests made yet: no data to get, return empty list
     rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
 
-def test_get_updates_when_added_light(client):
+def test_get_commands_when_added_light(client):
     add_light(client, "0000")
     rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
     assert rv.get_json() == {"lights": []}
 
 
-def test_get_updates(client):
+def test_get_commands(client):
     add_light(client, "0000")
     update_light_status(client, "0000", "on")
 
@@ -109,7 +109,7 @@ def test_get_updates(client):
     assert rv.get_json() == {"lights": [{"id": "0000", "state": "on"}]}
 
 
-def test_get_updates_only_once(client):
+def test_get_commands_only_once(client):
     add_light(client, "0000")
     update_light_status(client, "0000", "on")
 
