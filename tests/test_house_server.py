@@ -90,14 +90,14 @@ def test_get_commands_when_empty(client):
     # No requests made yet: no data to get, return empty list
     rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
-    assert rv.get_json() == {"lights": []}
+    assert rv.get_json() == {"lights": [], "messages": []}
 
 
 def test_get_commands_when_added_light(client):
     add_light(client, "0000")
     rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
-    assert rv.get_json() == {"lights": []}
+    assert rv.get_json() == {"lights": [], "messages": []}
 
 
 def test_get_commands(client):
@@ -106,7 +106,7 @@ def test_get_commands(client):
 
     rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
-    assert rv.get_json() == {"lights": [{"id": "0000", "state": "on"}]}
+    assert rv.get_json() == {"lights": [{"id": "0000", "state": "on"}], "messages": []}
 
 
 def test_get_commands_only_once(client):
@@ -116,7 +116,7 @@ def test_get_commands_only_once(client):
     rv = client.get("/updates?key=test_pi_key")
     rv = client.get("/updates?key=test_pi_key")
     assert rv.status_code == 200
-    assert rv.get_json() == {"lights": []}
+    assert rv.get_json() == {"lights": [], "messages": []}
 
 
 def test_get_multiple_updates(client):
@@ -130,7 +130,10 @@ def test_get_multiple_updates(client):
     assert rv.status_code == 200
     assert (
         rv.get_json()
-        == {"lights": [{"id": "0000", "state": "on"}, {"id": "0001", "state": "off"}]}
+        == {
+            "lights": [{"id": "0000", "state": "on"}, {"id": "0001", "state": "off"}],
+            "messages": [],
+        }
     )
 
 
@@ -144,7 +147,7 @@ def test_get_multiple_updates_only_once(client):
     rv = client.get("/updates")
     rv = client.get("/updates")
     assert rv.status_code == 200
-    assert rv.get_json() == {"lights": []}
+    assert rv.get_json() == {"lights": [], "messages": []}
 
 
 def test_all_on(client):
@@ -164,6 +167,26 @@ def test_all_on(client):
                 {"id": "0000", "state": "on"},
                 {"id": "0001", "state": "on"},
                 {"id": "0002", "state": "on"},
-            ]
+            ],
+            "messages": [],
         }
     )
+
+
+def test_custom_message(client):
+    rv = client.post("/messages", data={"message": "test_message"})
+    assert rv.status_code == 200
+
+    rv = client.get("/updates?key=test_pi_key")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": [], "messages": ["test_message"]}
+
+
+def test_custom_message_only_once(client):
+    rv = client.post("/messages", data={"message": "test_message"})
+    assert rv.status_code == 200
+
+    rv = client.get("/updates?key=test_pi_key")
+    rv = client.get("/updates?key=test_pi_key")
+    assert rv.status_code == 200
+    assert rv.get_json() == {"lights": [], "messages": []}

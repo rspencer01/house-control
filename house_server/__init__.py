@@ -140,9 +140,11 @@ def create_application(test_config=None):
         return "OK"
 
     @application.route("/updates", methods=["POST", "GET"])
+    @application.route("/lights/updates", methods=["POST", "GET"])
     def commands():
         if request.method == "GET":
             lights_updates = []
+            messages = []
             for update in db.session().query(LightStateRequest).filter(
                 LightStateRequest.seen == False
             ):
@@ -150,8 +152,13 @@ def create_application(test_config=None):
                     {"id": update.light_id, "state": "on" if update.state else "off"}
                 )
                 update.seen = True
+            for message in db.session().query(CustomMessage).filter(
+                CustomMessage.seen == False
+            ):
+                messages.append(message.message)
+                message.seen = True
             db.session.commit()
-            return jsonify({"lights": lights_updates})
+            return jsonify({"lights": lights_updates, "messages": messages})
 
         elif request.method == "POST":
             light_id = request.form["light_id"]
@@ -170,6 +177,17 @@ def create_application(test_config=None):
                 "warning",
             )
             return "OK"
+
+    @application.route("/messages", methods=["POST"])
+    def messages():
+        message = request.form["message"]
+        db.session.add(
+            CustomMessage(time=int(time.time()), message=message, seen=False)
+        )
+        db.session.commit()
+        flash('Sent command "%s"' % message, "success")
+        flash("Currently commands are not immediate.", "warning")
+        return "OK"
 
     return application
 
