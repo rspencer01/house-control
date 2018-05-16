@@ -230,6 +230,7 @@ def create_application(test_config=None):
 
         if request.method == "POST":
             schedule.name = request.form["name"]
+            schedule.enabled = HUMANDECODE[request.form["enabled"]]
             db.session.commit()
             flash('Updated schedule "%s"' % schedule.name, "success")
             return redirect(url_for("index"))

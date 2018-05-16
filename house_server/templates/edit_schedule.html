@@ -20,6 +20,20 @@ Edit Schedule
                 A human readable name for this schedule, e.g. "Away for Evening" or "Morning lights off".
               </small>
             </div>
+            <div class="form-group">
+              <label>Enabled</label><br>
+              <div class="btn-group btn-group-toggle" data-toggle="buttons" style="width:100%;">
+                <label class="btn btn-outline-secondary {{ "active" if schedule.enabled else "" }}" for="enabled-on" style="width:50%;">
+                  <input type="radio" class="form-control" id="enabled-on" name="enabled" value="on" {{ "checked" if schedule.enabled else "" }}>Enabled</input>
+                </label>
+                <label class="btn btn-outline-secondary {{ "active" if not schedule.enabled else "" }}" for="enabled-off" style="width:50%;">
+                  <input type="radio" class="form-control" id="enabled-off" name="enabled" value="off" {{ "checked" if not schedule.enabled else "" }}>Disabled</input>
+                </label>
+              </div>
+              <small class="form-text text-muted">
+                These rules will only apply when this schedule is enabled.
+              </small>
+            </div>
           </fieldset>
           <button type="submit" class="btn btn-primary float-right">Update</button>
         </form>

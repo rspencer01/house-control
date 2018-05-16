@@ -59,7 +59,7 @@ class Schedule(db.Model):
     enabled = db.Column(db.Boolean)
 
     def __repr__(self):
-        return "<Schedule %r %r %r>" % (self.id, self.name, self.active)
+        return "<Schedule %r %r %r>" % (self.id, self.name, self.enabled)
 
 
 class ScheduleRule(db.Model):
