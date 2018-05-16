@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+Edit Schedule
+{% endblock %}
+
+{% block content %}
+<div class="card-deck">
+  <div class="card">
+    <h5 class="card-header">Schedule
+      <button class="btn btn-outline-secondary btn-sm float-right">{{ "Enabled" if schedule.enabled else "Disabled" }}</button></h5>
+    <div class="card-body">
+      <p class="card-text">
+        <form method="POST">
+          <fieldset>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" class="form-control" id="name" name="name" value="{{ schedule.name }}"/>
+              <small class="form-text text-muted">
+                A human readable name for this schedule, e.g. "Away for Evening" or "Morning lights off".
+              </small>
+            </div>
+          </fieldset>
+          <button type="submit" class="btn btn-primary float-right">Update</button>
+        </form>
+        <form method="POST" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}">
+          <button id="delete" class="btn btn-danger float-left">Delete</button>
+        </form>
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h5 class="card-header">Rules</h5>
+    <div class="card-body">
+      <table class="table">
+        <tbody>
+          {% for rule in schedule.rules | sort(attribute="time")  %}
+            <tr>
+              <td style="vertical-align:middle;">
+                {{ rule.time//60 }}:{{ rule.time%60 }}
+              </td>
+              <td style="vertical-align:middle;">
+                {{ rule.light.name }}
+              </td>
+              <td style="vertical-align:middle;">
+                {{ "On" if rule.state else "Off" }}
+              </td>
+              <td style="vertical-align:middle;">
+                <button class="btn btn-sm btn-outline-danger delete-rule" data-href="{{ url_for('delete_rule', rule_id=rule.id) }}"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h5 class="card-header">Add Rule</h5>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('add_rule', schedule_id=schedule.id) }}">
+        <fieldset>
+          <div class="form-group">
+            <label for="name">Light</label>
+            <select class="form-control" id="light" name="light" >
+              {% for light in lights %}
+                <option value="{{ light.id }}">{{ light.name }}</option>
+              {% endfor %}
+            </select>
+            <small class="form-text text-muted">
+              Which light should be turned on or off?
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="name">Time</label>
+            <input type="text" class="form-control" id="time" name="time"/>
+            <small class="form-text text-muted">
+              At what time should this rule be applied?  Please enter in HH:MM format.
+            </small>
+          </div>
+          <div class="form-group">
+            <label>State</label>
+            <br>
+            <div class="btn-group btn-group-toggle" data-toggle="buttons" style="width:100%;">
+              <label class="btn btn-outline-secondary active" for="state-on" style="width:50%;">
+                <input type="radio" class="form-control" id="state-on" name="state" value="on" checked>On</input>
+              </label>
+              <label class="btn btn-outline-secondary" for="state-on" style="width:50%;">
+                <input type="radio" class="form-control" id="state-on" name="state" value="off">Off</input>
+              </label>
+            </div>
+            <small class="form-text text-muted">
+              Should the light be turned on or off?
+            </small>
+          </div>
+        </fieldset>
+        <button type="submit" class="btn btn-primary float-right">Add</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  jQuery(document).ready(function($) {
+      $(".delete-rule").click(function(event) {
+        event.stopPropagation();
+        $.post($(this).data("href"), {}, function() {
+          location.reload(true);
+        });
+      });
+  });
+</script>
+{% endblock %}

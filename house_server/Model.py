@@ -51,3 +51,23 @@ class CustomMessage(db.Model):
         return "<CustomMessage %r %r %r %r>" % (
             self.id, self.time, self.message, self.seen
         )
+
+
+class Schedule(db.Model):
+    id = db.Column(db.Integer, unique=True, autoincrement=True, primary_key=True)
+    name = db.Column(db.String(120))
+    enabled = db.Column(db.Boolean)
+
+    def __repr__(self):
+        return "<Schedule %r %r %r>" % (self.id, self.name, self.active)
+
+
+class ScheduleRule(db.Model):
+    id = db.Column(db.Integer, unique=True, autoincrement=True, primary_key=True)
+    light_id = db.Column(db.String(80), db.ForeignKey("light.id"))
+    schedule_id = db.Column(db.Integer, db.ForeignKey("schedule.id"))
+    schedule = db.relationship("Schedule", backref=db.backref("rules", lazy=True))
+    # The time is stored in minutes past midnight
+    time = db.Column(db.Integer)
+    state = db.Column(db.Boolean)
+    light = db.relationship("Light")

@@ -7,7 +7,7 @@ Overview
 {% block content %}
 <div class="card-deck">
   <div class="card">
-      <h5 class="card-header">Lights
+    <h5 class="card-header">Lights
       <button class="btn btn-outline-secondary btn-sm float-right" id="all-off" style="margin-left:5px;">All off</button>
       <button class="btn btn-outline-secondary btn-sm float-right" id="all-on" style="margin-right:5px;">All on</button></h5>
     <div class="card-body">
@@ -36,10 +36,43 @@ Overview
     <h5 class="card-header">Flashing LEDs</h5>
     <div class="card-body">
       <p class="card-text">
-        This funciton enables the flashing of the LEDs on the light switches as a deterrant to home invaders.
+        This function enables the flashing of the LEDs on the light switches as a deterrant to home invaders.
       </p>
-      <button class="btn btn-outline-secondary float-right" id="LEDs-on" style="margin-left:5px;">Enable</button>
-      <button class="btn btn-outline-secondary float-right" id="LEDs-off" style="margin-right:5px;">Disable</button>
+      <button class="btn btn-outline-primary float-right" id="LEDs-on" style="margin-left:5px;">Enable</button>
+      <button class="btn btn-outline-primary float-right" id="LEDs-off" style="margin-right:5px;">Disable</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h5 class="card-header">Schedules
+      {% if schedules != [] %}
+      <button class="btn btn-outline-secondary btn-sm float-right" id="new-schedule" style="margin-right:5px;">New</button>
+      {% endif %}
+    </h5>
+    <div class="card-body">
+      {% if schedules != [] %}
+        <table class="table">
+          <tbody>
+            {% for schedule in schedules %}
+              <tr>
+                <td class="clickable-link" data-href="{{ url_for('edit_schedule', schedule_id=schedule.id) }}">
+                  {{ schedule.name }}
+                </td>
+                <td class="light-toggle" data-changeto="{{ "off" if schedule.enabled else "on" }}" data-schedule_id="{{ schedule.id }}" style="text-align:center;">
+                  <i class="fas-large fas {{ "fa-toggle-on" if schedule.enabled else "fa-toggle-off" }}"></i>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p class="card-text"><small class="text-muted">Tap on a schedule to edit it and on the switch to enable/disable it.</small></p>
+      {% else %}
+        <p class="card-text">
+          Add scheduled light timings.
+        </p>
+        <button class="btn btn-outline-primary btn-block" id="new-schedule" style="margin-right:5px;">New</button>
+      {% endif %}
+
     </div>
   </div>
 
@@ -89,6 +122,12 @@ Overview
         event.stopPropagation();
         $.post("{{ url_for('messages') }}", { message: "LED_FLASH_OFF" }, function () {
           location.reload(true);
+        });
+      });
+      $("#new-schedule").click(function(event) {
+        event.stopPropagation();
+        $.post("{{ url_for('new_schedule') }}", {}, function (data) {
+          document.location = "/edit/schedule/" + data;
         });
       });
   });

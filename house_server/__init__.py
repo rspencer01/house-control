@@ -67,6 +67,7 @@ def create_application(test_config=None):
             "index.html",
             data=open("/tmp/data").read(),
             lights=Light.query.all(),
+            schedules=Schedule.query.all(),
             last_modified=os.path.getmtime("/tmp/data"),
         )
 
@@ -188,6 +189,70 @@ def create_application(test_config=None):
         flash('Sent command "%s"' % message, "success")
         flash("Currently commands are not immediate.", "warning")
         return "OK"
+
+    @application.route("/new_schedule", methods=["POST"])
+    @auth.login_required
+    def new_schedule():
+        schedule = Schedule(name="New", enabled=False)
+        db.session.add(schedule)
+        db.session.commit()
+        flash("Created new schedule", "success")
+        return str(schedule.id)
+
+    @application.route("/delete_schedule/<schedule_id>", methods=["POST"])
+    @auth.login_required
+    def delete_schedule(schedule_id):
+        schedule = Schedule.query.filter_by(id=schedule_id).first()
+        db.session.delete(schedule)
+        db.session.commit()
+        return redirect(url_for("index"))
+
+    @application.route("/delete_rule/<rule_id>", methods=["POST"])
+    @auth.login_required
+    def delete_rule(rule_id):
+        rule = ScheduleRule.query.filter_by(id=rule_id).first()
+        db.session.delete(rule)
+        db.session.commit()
+        return "OK"
+
+    @application.route("/edit/schedule/<schedule_id>", methods=["GET", "POST"])
+    @auth.login_required
+    def edit_schedule(schedule_id):
+        schedule = Schedule.query.filter_by(id=schedule_id).first()
+        if schedule is None:
+            flash("The requested schedule could not be found.", "error")
+            return redirect(url_for("index"))
+
+        if request.method == "GET":
+            return render_template(
+                "edit_schedule.html", schedule=schedule, lights=Light.query.all()
+            )
+
+        if request.method == "POST":
+            schedule.name = request.form["name"]
+            db.session.commit()
+            flash('Updated schedule "%s"' % schedule.name, "success")
+            return redirect(url_for("index"))
+
+    @application.route("/add/rule/to/schedule/<schedule_id>", methods=["POST"])
+    @auth.login_required
+    def add_rule(schedule_id):
+        schedule = Schedule.query.filter_by(id=schedule_id).first()
+        if schedule is None:
+            flash("The requested schedule could not be found.", "error")
+            return redirect(url_for("index"))
+
+        light = Light.query.filter_by(id=request.form["light"]).first()
+        if schedule is None:
+            flash("The requested light could not be found.", "error")
+            return redirect(url_for("index"))
+
+        time = int(request.form["time"].split(":")[0]) * 60
+        time += int(request.form["time"].split(":")[1])
+        state = request.form["state"] == "on"
+        schedule.rules.append(ScheduleRule(light=light, time=time, state=state))
+        db.session.commit()
+        return redirect(url_for("edit_schedule", schedule_id=schedule.id))
 
     return application
 
