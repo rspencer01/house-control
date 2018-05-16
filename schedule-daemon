@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+from house_server import *
+from house_server.Model import *
+import datetime
+import time
+
+app = create_application()
+with app.app_context():
+    while True:
+        now = datetime.datetime.now()
+        for schedule in Schedule.query.filter_by(enabled=True):
+            for rule in schedule.rules:
+                if rule.time / 60 == now.hour and rule.time % 60 == now.minute:
+                    rule.light.lightstaterequests.append(
+                        LightStateRequest(
+                            time=int(time.time()), state=rule.state, seen=False
+                        )
+                    )
+        db.session.commit()
+        time.sleep(30)
