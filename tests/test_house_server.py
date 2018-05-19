@@ -173,6 +173,29 @@ def test_all_on(client):
     )
 
 
+def test_all_off(client):
+    add_light(client, "0000")
+    add_light(client, "0001")
+    add_light(client, "0002")
+
+    rv = client.post("/all", data={"state": "off"})
+    assert rv.status_code == 200
+
+    rv = client.get("/updates?key=test_pi_key")
+    assert rv.status_code == 200
+    assert (
+        rv.get_json()
+        == {
+            "lights": [
+                {"id": "0000", "state": "off"},
+                {"id": "0001", "state": "off"},
+                {"id": "0002", "state": "off"},
+            ],
+            "messages": [],
+        }
+    )
+
+
 def test_custom_message(client):
     rv = client.post("/messages", data={"message": "test_message"})
     assert rv.status_code == 200
