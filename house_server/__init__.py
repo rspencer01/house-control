@@ -128,9 +128,10 @@ def create_application(test_config=None):
         new_state = HUMANDECODE[request.form["state"]]
 
         for light in Light.query.all():
-            light.lightstaterequests.append(
-                LightStateRequest(time=int(time.time()), state=new_state, seen=False)
-            )
+            if new_state:
+                light.turn_on()
+            else:
+                light.turn_off()
         db.session.commit()
 
         flash('Switched all lights "%s"' % request.form["state"], "success")
@@ -168,9 +169,10 @@ def create_application(test_config=None):
             light = Light.query.get(light_id)
             if not light:
                 abort(400)
-            light.lightstaterequests.append(
-                LightStateRequest(time=int(time.time()), state=new_state, seen=False)
-            )
+            if new_state:
+                light.turn_on()
+            else:
+                light.turn_off()
             db.session.commit()
             flash('Toggled light "%s"' % light.name, "success")
             flash(

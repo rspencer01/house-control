@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+import time
 
 db = SQLAlchemy()
 
@@ -12,6 +13,16 @@ class Light(db.Model):
 
     def latest_state(self):
         return self.lightstates[-1]
+
+    def turn_on(self):
+        self.lightstaterequests.append(
+            LightStateRequest(time=int(time.time()), state=True, seen=False)
+        )
+
+    def turn_off(self):
+        self.lightstaterequests.append(
+            LightStateRequest(time=int(time.time()), state=False, seen=False)
+        )
 
 
 class LightState(db.Model):

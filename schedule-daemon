@@ -12,10 +12,9 @@ with app.app_context():
         for schedule in Schedule.query.filter_by(enabled=True):
             for rule in schedule.rules:
                 if rule.time / 60 == now.hour and rule.time % 60 == now.minute:
-                    rule.light.lightstaterequests.append(
-                        LightStateRequest(
-                            time=int(time.time()), state=rule.state, seen=False
-                        )
-                    )
+                    if rule.state:
+                        rule.light.turn_on()
+                    else:
+                        rule.light.turn_off()
         db.session.commit()
         time.sleep(30)
