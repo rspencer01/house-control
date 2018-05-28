@@ -68,7 +68,6 @@ def create_application(test_config=None):
     def index():
         return render_template(
             "index.html",
-            data=open("/tmp/data").read(),
             groups=LightGroup.query.all(),
             lights=Light.query.all(),
             schedules=Schedule.query.all(),

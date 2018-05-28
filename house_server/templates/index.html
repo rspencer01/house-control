@@ -69,12 +69,8 @@ Overview
     <h5 class="card-header">Debug Data</h5>
     <div class="card-body">
       <p class="card-text">
-        {{ data }}
+        Last updated {{ last_modified | strftime }}.
       </p>
-      <p class="card-text">
-        Last updated {{ last_modified | strftime }}
-      </p>
-      <p class="card-text"><small class="text-muted">Latest raw dump of received data.</small></p>
     </div>
   </div>
 </div>
