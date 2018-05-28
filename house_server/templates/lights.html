@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+Lights
+{% endblock %}
+
+{% block content %}
+<div class="accordion" id="accordionExample">
+  {% for group in groups %}
+    <div class="card">
+      <h5 class="card-header" data-toggle="collapse" data-target="#collapse{{ group.id }}" aria-expanded="true" aria-controls="collapse{{ group.id }}">
+            {{ group.name }}
+            <small class="float-right">
+              <span class="text-muted">{{ group.lights | counton }}</span>&nbsp;/&nbsp;{{ group.lights | length }}
+            </small>
+      </h5>
+      <div id="collapse{{ group.id }}" class="collapse" aria-labelledby="heading{{ group.id }}" data-parent="#accordionExample">
+        <table class="table">
+          <tbody>
+            {% for light in group.lights %}
+              <tr>
+                <td class="clickable-link" data-href="{{ url_for('edit_light', light_id=light.id) }}">
+                  {{ light.name }}
+                </td>
+                <td class="light-toggle" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}" style="text-align:center;">
+                  <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endfor %}
+  <div class="card">
+    <h5 class="card-header" data-toggle="collapse" data-target="#collapseNone" aria-expanded="true" aria-controls="collapseNone">
+          Unsorted
+    </h5>
+    <div id="collapseNone" class="collapse" aria-labelledby="headingNone" data-parent="#accordionExample">
+      <table class="table card-body">
+        <tbody>
+          {% for light in lights if light.group is none %}
+            <tr>
+              <td class="clickable-link" data-href="{{ url_for('edit_light', light_id=light.id) }}">
+                {{ light.name }}
+              </td>
+              <td class="light-toggle" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}" style="text-align:center;">
+                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  jQuery(document).ready(function($) {
+      $(".light-toggle").click(function(event) {
+        event.stopPropagation();
+        $.post("{{ url_for('commands') }}", { light_id: $(this).data("light_id"), state: $(this).data("changeto")}, function() {
+          location.reload(true);
+        });
+      });
+  });
+</script>
+{% endblock %}

@@ -75,6 +75,13 @@ def create_application(test_config=None):
             last_modified=os.path.getmtime("/tmp/data"),
         )
 
+    @application.route("/lights")
+    @auth.login_required
+    def lights():
+        return render_template(
+            "lights.html", groups=LightGroup.query.all(), lights=Light.query.all()
+        )
+
     @application.route("/edit/light/<light_id>", methods=["GET", "POST"])
     @auth.login_required
     def edit_light(light_id):

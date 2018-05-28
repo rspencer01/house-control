@@ -14,21 +14,10 @@ Overview
       <p>
         There are {{ lights | length }} lights, of which {{ lights | counton }} are on.
       </p>
-      <table class="table">
-        <tbody>
-          {% for light in lights %}
-            <tr>
-              <td class="clickable-link" data-href="{{ url_for('edit_light', light_id=light.id) }}">
-                {{ light.name }}
-              </td>
-              <td class="light-toggle" data-changeto="{{ "off" if light.latest_state().state else "on" }}" data-light_id="{{ light.id }}" style="text-align:center;">
-                <i class="fas-large fas {{ "fa-toggle-on" if light.latest_state().state else "fa-toggle-off" }}"></i>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <p class="card-text"><small class="text-muted">Tap on a light name to edit the light and on the switch to toggle it.  Manage groups <a href="{{ url_for('manage_groups') }}">here.</a></small></p>
+      <p>
+        <a class="btn btn-outline-primary btn-block" href="{{ url_for('lights') }}">Light Control</a>
+      </p>
+      <p class="card-text"><small class="text-muted">Manage light groups <a href="{{ url_for('manage_groups') }}">here.</a></small></p>
     </div>
   </div>
 
