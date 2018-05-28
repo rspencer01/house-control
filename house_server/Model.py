@@ -7,6 +7,8 @@ db = SQLAlchemy()
 class Light(db.Model):
     id = db.Column(db.String(80), primary_key=True)
     name = db.Column(db.String(120))
+    group_id = db.Column(db.Integer, db.ForeignKey("light_group.id"))
+    group = db.relationship("LightGroup")
 
     def __repr__(self):
         return "<Light %r>" % self.name
@@ -23,6 +25,16 @@ class Light(db.Model):
         self.lightstaterequests.append(
             LightStateRequest(time=int(time.time()), state=False, seen=False)
         )
+
+
+class LightGroup(db.Model):
+    __tablename__ = "light_group"
+    id = db.Column(db.Integer, unique=True, autoincrement=True, primary_key=True)
+    name = db.Column(db.String(120))
+    lights = db.relationship("Light")
+
+    def __repr__(self):
+        return "<LightGroup %r %r>" % (self.name, self.id)
 
 
 class LightState(db.Model):

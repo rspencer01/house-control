@@ -39,6 +39,9 @@ def create_application(test_config=None):
     application.secret_key = "laekdfjlkajsfpwiejr1oj3204-1044"
     application.config["SQLALCHEMY_DATABASE_URI"] = configuration["database"]
     application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    application.config["SQLALCHEMY_ECHO"] = configuration[
+        "SQLALCHEMY_ECHO"
+    ] if "SQLALCHEMY_ECHO" in configuration else False
 
     db.init_app(application)
 
@@ -66,6 +69,7 @@ def create_application(test_config=None):
         return render_template(
             "index.html",
             data=open("/tmp/data").read(),
+            groups=LightGroup.query.all(),
             lights=Light.query.all(),
             schedules=Schedule.query.all(),
             last_modified=os.path.getmtime("/tmp/data"),
@@ -80,9 +84,17 @@ def create_application(test_config=None):
             return redirect(url_for("index"))
 
         if request.method == "GET":
-            return render_template("edit_light.html", light=light)
+            return render_template(
+                "edit_light.html", light=light, groups=LightGroup.query.all()
+            )
 
         if request.method == "POST":
+            if request.form["group"] == "None":
+                light.group = None
+            else:
+                light.group = LightGroup.query.filter_by(
+                    id=request.form["group"]
+                ).first()
             light.name = request.form["name"]
             db.session.commit()
             flash('Updated light "%s"' % light.name, "success")
@@ -200,6 +212,42 @@ def create_application(test_config=None):
         db.session.commit()
         flash("Created new schedule", "success")
         return str(schedule.id)
+
+    @application.route("/new_group", methods=["POST"])
+    @auth.login_required
+    def new_group():
+        group = LightGroup(name="New Group")
+        db.session.add(group)
+        db.session.commit()
+        flash("Created new light group", "success")
+        return redirect(url_for("manage_groups"))
+
+    @application.route("/delete_group/<group_id>", methods=["POST"])
+    @auth.login_required
+    def delete_group(group_id):
+        group = LightGroup.query.filter_by(id=group_id).first()
+        db.session.delete(group)
+        db.session.commit()
+        flash("Deleted light group", "success")
+        return redirect(url_for("manage_groups"))
+
+    @application.route("/manage_groups")
+    @auth.login_required
+    def manage_groups():
+        return render_template("edit_groups.html", groups=LightGroup.query.all())
+
+    @application.route("/edit_group/<group_id>", methods=["GET", "POST"])
+    @auth.login_required
+    def edit_group(group_id):
+        group = LightGroup.query.filter_by(id=group_id).first()
+        if request.method == "POST":
+            group.name = request.form["name"]
+            db.session.commit()
+            flash('Updated group "%s"' % group.name, "success")
+            return redirect(url_for("manage_groups"))
+
+        else:
+            return render_template("edit_group.html", group=group)
 
     @application.route("/delete_schedule/<schedule_id>", methods=["POST"])
     @auth.login_required

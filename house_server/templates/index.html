@@ -28,7 +28,7 @@ Overview
           {% endfor %}
         </tbody>
       </table>
-      <p class="card-text"><small class="text-muted">Tap on a light name to edit the light and on the switch to toggle it.</small></p>
+      <p class="card-text"><small class="text-muted">Tap on a light name to edit the light and on the switch to toggle it.  Manage groups <a href="{{ url_for('manage_groups') }}">here.</a></small></p>
     </div>
   </div>
 
@@ -46,7 +46,7 @@ Overview
   <div class="card">
     <h5 class="card-header">Schedules
       {% if schedules != [] %}
-      <button class="btn btn-outline-secondary btn-sm float-right" id="new-schedule" style="margin-right:5px;">New</button>
+      <button class="btn btn-outline-success btn-sm float-right" id="new-schedule" style="margin-right:5px;">New</button>
       {% endif %}
     </h5>
     <div class="card-body">

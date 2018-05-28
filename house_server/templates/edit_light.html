@@ -20,6 +20,20 @@ Edit Light
               </small>
             </div>
           </fieldset>
+          <fieldset>
+            <div class="form-group">
+              <label for="group">Group</label>
+              <select class="form-control" id="group" name="group" >
+                <option value="None">---</option>
+                {% for group in groups %}
+                <option value="{{ group.id }}" {{ 'selected' if group.id == light.group.id else ''}}>{{ group.name }}</option>
+                {% endfor %}
+              </select>
+              <small class="form-text text-muted">
+                A human readable name for this light, e.g. "Lounge" or "Office".
+              </small>
+            </div>
+          </fieldset>
           <button type="submit" class="btn btn-primary float-right">Update</button>
         </form>
       </p>
