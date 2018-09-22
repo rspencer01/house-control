@@ -41,7 +41,7 @@ class LightState(db.Model):
     time = db.Column(db.Integer, primary_key=True)
     light_id = db.Column(db.String(80), db.ForeignKey("light.id"), primary_key=True)
     light = db.relationship(
-        "Light", backref=db.backref("lightstates", lazy=True, order_by=time)
+        "Light", backref=db.backref("lightstates", lazy="dynamic", order_by=time)
     )
     state = db.Column(db.Boolean)
 

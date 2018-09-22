@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+Statistics
+{% endblock %}
+
+{% block content %}
+<div id="last_day">
+</div>
+<div id="last_week">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script type="text/javascript">
+var day_data = [{
+  x: {{ day_times }},
+  y: {{ day_lights_on }},
+  type: 'bar',
+}];
+var week_data = [{
+  x: {{ week_times }},
+  y: {{ week_lights_on }},
+  type: 'bar',
+}];
+Plotly.newPlot('last_day', day_data);
+Plotly.newPlot('last_week', week_data);
+</script>
+{% endblock %}

@@ -3,7 +3,7 @@ import json
 import time
 import os
 from logging.config import dictConfig
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import yaml
 from flask import (
@@ -310,6 +310,59 @@ def create_application(test_config=None):
         schedule.rules.append(ScheduleRule(light=light, time=time, state=state))
         db.session.commit()
         return redirect(url_for("edit_schedule", schedule_id=schedule.id))
+
+    @application.route("/power_statistics", methods=["GET"])
+    @auth.login_required
+    def power_statistics():
+        yesterday = int(time.time()) - 60 * 60 * 24
+        day_lights_on = []
+        for i in xrange(24 * 4):
+            max_query = db.session().query(
+                LightState.light_id, db.func.max(LightState.time).label("max_time")
+            ).filter(
+                LightState.time < yesterday + i * 60 * 15
+            ).group_by(
+                LightState.light_id
+            ).subquery()
+            day_lights_on.append(
+                db.session().query(LightState).join(
+                    max_query,
+                    db.and_(
+                        LightState.light_id == max_query.c.light_id,
+                        LightState.time == max_query.c.max_time,
+                    ),
+                ).filter(
+                    LightState.state == True
+                ).count()
+            )
+        lastweek = int(time.time()) - 60 * 60 * 24 * 7
+        week_lights_on = []
+        for i in xrange(24 * 2 * 7):
+            max_query = db.session().query(
+                LightState.light_id, db.func.max(LightState.time).label("max_time")
+            ).filter(
+                LightState.time < lastweek + i * 60 * 30
+            ).group_by(
+                LightState.light_id
+            ).subquery()
+            week_lights_on.append(
+                db.session().query(LightState).join(
+                    max_query,
+                    db.and_(
+                        LightState.light_id == max_query.c.light_id,
+                        LightState.time == max_query.c.max_time,
+                    ),
+                ).filter(
+                    LightState.state == True
+                ).count()
+            )
+        return render_template(
+            "statistics.html",
+            day_lights_on=day_lights_on,
+            day_times=range(yesterday, yesterday + 60 * 24, 15),
+            week_lights_on=week_lights_on,
+            week_times=range(lastweek, lastweek + 60 * 24 * 7, 30),
+        )
 
     return application
 
