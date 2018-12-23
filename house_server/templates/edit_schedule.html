@@ -52,7 +52,7 @@ Edit Schedule
           {% for rule in schedule.rules | sort(attribute="time")  %}
             <tr>
               <td style="vertical-align:middle;">
-                {{ rule.time//60 }}:{{ rule.time%60 }}
+                {{ "%02d" % (rule.time//60) }}:{{ "%02d" % (rule.time%60) }}
               </td>
               <td style="vertical-align:middle;">
                 {{ rule.light.name }}
