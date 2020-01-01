@@ -7,14 +7,12 @@ import time
 
 app = create_application()
 with app.app_context():
-    while True:
-        now = datetime.datetime.now()
-        for schedule in Schedule.query.filter_by(enabled=True):
-            for rule in schedule.rules:
-                if rule.time / 60 == now.hour and rule.time % 60 == now.minute:
-                    if rule.state:
-                        rule.light.turn_on()
-                    else:
-                        rule.light.turn_off()
-        db.session.commit()
-        time.sleep(30)
+    now = datetime.datetime.now()
+    for schedule in Schedule.query.filter_by(enabled=True):
+        for rule in schedule.rules:
+            if rule.time / 60 == now.hour and rule.time % 60 == now.minute:
+                if rule.state:
+                    rule.light.turn_on()
+                else:
+                    rule.light.turn_off()
+    db.session.commit()
