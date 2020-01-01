@@ -28,7 +28,7 @@ HUMANDECODE = {
 
 
 def create_application(test_config=None):
-    configuration = yaml.load(open("config.yaml", "r"))
+    configuration = yaml.safe_load(open("config.yaml", "r"))
     if test_config is not None:
         configuration.update(test_config)
 
