@@ -1,4 +1,5 @@
-from urllib2 import Request, urlopen, URLError
+from urllib.request import Request, urlopen
+from urllib.error import URLError
 import json
 import time
 import os
@@ -48,7 +49,7 @@ def create_application(test_config=None):
     from . import robots
     from . import auth
 
-    auth = auth.create_blueprint(test_config)
+    auth = auth.create_blueprint(test_config, application)
 
     application.register_blueprint(robots.bp)
     application.register_blueprint(auth)
@@ -119,7 +120,7 @@ def create_application(test_config=None):
         for entry in data:
             light_id = entry["id"]
             light_state = entry["state"]
-            if type(light_id) is not unicode:
+            if type(light_id) is not str:
                 abort(400)
             if light_state not in HUMANDECODE:
                 abort(400)
@@ -316,7 +317,7 @@ def create_application(test_config=None):
     def power_statistics():
         yesterday = int(time.time()) - 60 * 60 * 24
         day_lights_on = []
-        for i in xrange(24 * 4):
+        for i in range(24 * 4):
             max_query = db.session().query(
                 LightState.light_id, db.func.max(LightState.time).label("max_time")
             ).filter(
@@ -337,7 +338,7 @@ def create_application(test_config=None):
             )
         lastweek = int(time.time()) - 60 * 60 * 24 * 7
         week_lights_on = []
-        for i in xrange(24 * 2 * 7):
+        for i in range(24 * 2 * 7):
             max_query = db.session().query(
                 LightState.light_id, db.func.max(LightState.time).label("max_time")
             ).filter(
@@ -359,9 +360,9 @@ def create_application(test_config=None):
         return render_template(
             "statistics.html",
             day_lights_on=day_lights_on,
-            day_times=range(yesterday, yesterday + 60 * 24, 15),
+            day_times=list(range(yesterday, yesterday + 60 * 24, 15)),
             week_lights_on=week_lights_on,
-            week_times=range(lastweek, lastweek + 60 * 24 * 7, 30),
+            week_times=list(range(lastweek, lastweek + 60 * 24 * 7, 30)),
         )
 
     return application

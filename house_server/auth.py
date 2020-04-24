@@ -1,23 +1,26 @@
-from urllib2 import Request, urlopen, URLError
+from urllib.request import Request, urlopen
+from urllib.error import URLError
 import functools
 import json
 
 from flask import (
     Blueprint, url_for, session, redirect, render_template, current_app, abort, request
 )
-from flask_oauth import OAuth
+
+from authlib.integrations.flask_client import OAuth
+
 import yaml
 
 
-def create_blueprint(test_config=None):
+def create_blueprint(test_config=None, app=None):
     configuration = yaml.safe_load(open("config.yaml", "r"))
     if test_config is not None:
         configuration.update(test_config)
 
     bp = Blueprint("auth", __name__)
 
-    oauth = OAuth()
-    google = oauth.remote_app(
+    oauth = OAuth(app)
+    google = oauth.register(
         "google",
         base_url="https://www.google.com/accounts",
         authorize_url="https://accounts.google.com/o/oauth2/auth",
@@ -29,8 +32,10 @@ def create_blueprint(test_config=None):
         access_token_url="https://accounts.google.com/o/oauth2/token",
         access_token_method="POST",
         access_token_params={"grant_type": "authorization_code"},
-        consumer_key=configuration["google_client_id"],
-        consumer_secret=configuration["google_client_secret"],
+        client_id=configuration["google_client_id"],
+        client_secret=configuration["google_client_secret"],
+        client_kwargs={"scope": "https://www.googleapis.com/auth/userinfo.email"},
+        userinfo_endpoint="https://openidconnect.googleapis.com/v1/userinfo",
     )
 
     def login_required(view):
@@ -61,40 +66,24 @@ def create_blueprint(test_config=None):
     @bp.route("/login")
     def login():
         callback = url_for("auth.authorized", _external=True)
-        return google.authorize(callback=callback)
+        return google.authorize_redirect(callback)
 
     @bp.route(configuration["redirect_uri"])
-    @google.authorized_handler
-    def authorized(resp):
-        access_token = resp["access_token"]
+    def authorized():
+        access_token = oauth.google.authorize_access_token()
+        userinfo = oauth.google.userinfo()
+
         session["access_token"] = access_token, ""
-        if access_token is None:
-            return render_template("login.html")
-
-        headers = {"Authorization": "OAuth " + access_token}
-        req = Request("https://www.googleapis.com/oauth2/v1/userinfo", None, headers)
-        try:
-            res = urlopen(req)
-        except URLError as e:
-            if e.code == 401:
-                session.pop("access_token", None)
-                return render_template("login.html")
-
-            return str(e)
-
-        login_details = json.loads(res.read())
-
-        if login_details["email"] not in configuration["authorized_emails"]:
+        if userinfo.email not in configuration["authorized_emails"]:
             current_app.logger.warn(
-                "Unauthorised attempted access of / by %s", login_details["email"]
+                "Unauthorised attempted access of / by %s", userinfo.email
             )
             session.pop("access_token", None)
             return "<html><body>Sorry, you are not authorized.</body></html>"
 
-        current_app.logger.info("Login by %s", login_details["email"])
+        current_app.logger.info("Login by %s", userinfo.email)
         return redirect(url_for("index"))
 
-    @google.tokengetter
     def get_access_token():
         return session.get("access_token")
 
