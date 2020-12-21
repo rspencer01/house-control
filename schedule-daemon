@@ -10,7 +10,7 @@ with app.app_context():
     now = datetime.datetime.now()
     for schedule in Schedule.query.filter_by(enabled=True):
         for rule in schedule.rules:
-            if rule.time / 60 == now.hour and rule.time % 60 == now.minute:
+            if rule.time // 60 == now.hour and rule.time % 60 == now.minute:
                 if rule.state:
                     rule.light.turn_on()
                 else:
